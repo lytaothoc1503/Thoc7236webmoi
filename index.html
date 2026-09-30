@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>MAGIC TÀ XÙA HOMESTAY | Private Priority</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- FIREBASE SDK V8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+      /* Giao diện Banner Điều khoản */
+.terms-banner {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(11, 14, 20, 0.95); border-top: 1px solid #d4af37;
+  color: #fff; padding: 15px 20px; font-size: 14px;
+  display: flex; justify-content: space-between; align-items: center;
+  z-index: 1000; backdrop-filter: blur(10px);
+}
+.terms-banner button {
+  background: linear-gradient(135deg, #f6e7b0 0%, #d4af37 60%, #aa820a 100%);
+  border: none; padding: 8px 20px; border-radius: 20px;
+  color: #000; font-weight: 700; cursor: pointer;
+}
+
+/* Giao diện Popup Overlay */
+.modal-overlay {
+  display: none; /* Ẩn mặc định */
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.85); z-index: 9999; backdrop-filter: blur(5px);
+}
+
+/* Giao diện Hộp thoại Đăng nhập */
+.modal-content {
+  background: #0b0e14; margin: 15vh auto; padding: 30px;
+  width: 90%; max-width: 400px; border: 1px solid #d4af37;
+  border-radius: 12px; color: #fff; position: relative;
+  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+}
+.close-btn {
+  position: absolute; top: 10px; right: 15px; color: #aaa;
+  font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.3s;
+}
+.close-btn:hover { color: #d4af37; }
+
+/* Ô nhập liệu */
+.modal-content input[type="text"], .modal-content input[type="password"] {
+  width: 100%; padding: 12px; margin: 10px 0 15px;
+  background: rgba(255, 255, 255, 0.05); border: 1px solid #333;
+  color: #fff; border-radius: 6px; box-sizing: border-box;
+}
+.modal-content input:focus {
+  outline: none; border-color: #d4af37; background: rgba(212, 175, 55, 0.05);
+}
+
+/* Checkbox điều khoản */
+.terms-checkbox {
+  font-size: 13px; color: #ccc; display: flex; align-items: flex-start; gap: 8px; margin-bottom: 20px;
+}
+.terms-checkbox input { margin-top: 3px; cursor: pointer; }
+
+/* Nút đăng nhập */
+.login-btn {
+  width: 100%; padding: 12px; border-radius: 6px;
+  background: linear-gradient(135deg, #f6e7b0 0%, #d4af37 60%, #aa820a 100%);
+  border: none; color: #000; font-weight: 700; font-size: 16px; cursor: pointer;
+}
+.login-btn:hover { filter: brightness(1.1); }
+      :root {
+        --bg-dark: #07090c;
+        --surface-card: rgba(18, 22, 29, 0.85);
+        --border-gold: rgba(212, 175, 55, 0.3);
+        --border-subtle: rgba(255, 255, 255, 0.08);
+        --gold-main: #d4af37;
+        --gold-light: #f6e7b0;
+        --emerald-green: #10b981;
+        --text-main: #f1f5f9;
+        --text-dim: #94a3b8;
+      }
+      * {
+        box-sizing: border-box; margin: 0; padding: 0;
+        font-family: 'Montserrat', sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        background-color: #000000;
+        display: flex; justify-content: center; min-height: 100vh;
+      }
+      .app-container {
+        width: 100%; max-width: 450px; min-height: 100vh;
+        background: url('https://cdnv2.tgdd.vn/mwg-static/common/News/1589661/hinh-nen-may-man-cho-menh-tho-7.jpg') no-repeat center center fixed;
+        background-size: cover; position: relative;
+        display: flex; flex-direction: column;
+        box-shadow: 0 0 45px rgba(0, 0, 0, 0.9); overflow: hidden;
+      }
+      .app-backdrop-dark {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(180deg, rgba(7, 9, 12, 0.82) 0%, rgba(11, 14, 20, 0.88) 100%);
+        z-index: 1;
+      }
+      .top-header {
+        position: sticky; top: 0; z-index: 50;
+        background: rgba(11, 14, 20, 0.92);
+        backdrop-filter: blur(15px);
+        border-bottom: 1px solid var(--border-gold);
+        padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;
+      }
+      .brand-name {
+        font-family: 'Cinzel', serif; font-size: 19px; letter-spacing: 2px; font-weight: 700;
+        background: linear-gradient(135deg, #f6e7b0 0%, #d4af37 60%, #aa820a 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+      }
+      .user-tag {
+        font-size: 12px; background: rgba(212, 175, 55, 0.1);
+        border: 1px solid var(--border-gold); color: var(--gold-light);
+        padding: 4px 12px; border-radius: 20px; font-weight: 600;
+        max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .content-scroll {
+        position: relative; z-index: 2; flex: 1;
+        overflow-y: auto; padding: 16px 16px 90px;
+      }
+      .content-scroll::-webkit-scrollbar { display: none; }
+      .tab-pane { display: none; }
+      .tab-pane.active { display: block; }
+
+      .balance-card {
+        background: linear-gradient(145deg, rgba(28, 34, 44, 0.95) 0%, rgba(14, 17, 23, 0.98) 100%);
+        border: 1px solid var(--border-gold); border-radius: 16px;
+        padding: 20px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7); margin-bottom: 18px;
+      }
+      .balance-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; }
+      .balance-val { font-size: 28px; font-weight: 700; color: #ffffff; margin: 8px 0 16px; }
+      .card-actions { display: flex; gap: 10px; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 14px; }
+      .btn-card-action {
+        flex: 1; background: rgba(255, 255, 255, 0.03); color: var(--gold-light);
+        border: 1px solid var(--border-gold); padding: 9px; border-radius: 8px;
+        font-size: 12.5px; font-weight: 600; cursor: pointer; text-align: center;
+      }
+
+      .quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; margin-bottom: 20px; }
+      .quick-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+      .quick-icon {
+        width: 48px; height: 48px; background: var(--surface-card);
+        border: 1px solid var(--border-subtle); border-radius: 14px;
+        display: flex; justify-content: center; align-items: center; font-size: 20px; margin-bottom: 6px;
+      }
+      .quick-text { font-size: 11px; color: var(--text-dim); font-weight: 500; }
+
+      /* DANH SÁCH PHÒNG HOMESTAY TRONG TAB HOME */
+      .homestay-sec-title {
+        font-size: 14px; font-weight: 700; color: var(--gold-light);
+        margin: 18px 0 12px; text-transform: uppercase; letter-spacing: 0.5px;
+      }
+      .room-item-card {
+        background: var(--surface-card); border: 1px solid var(--border-subtle);
+        border-radius: 14px; overflow: hidden; margin-bottom: 14px;
+      }
+      .room-item-card img { width: 100%; height: 160px; object-fit: cover; display: block; }
+      .room-item-body { padding: 14px; }
+      .room-item-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+      .room-item-price { font-size: 15px; color: var(--emerald-green); font-weight: 700; margin-bottom: 8px; }
+      .btn-book-now {
+        width: 100%; height: 38px; background: var(--gold-main); color: #000;
+        font-weight: 700; border: none; border-radius: 8px; cursor: pointer; font-size: 12.5px;
+      }
+
+      /* TAB NHIỆM VỤ TIẾP THỊ */
+      .slot-box {
+        background: var(--surface-card); border: 1px solid var(--border-subtle);
+        border-radius: 16px; padding: 22px 18px; text-align: center;
+      }
+      .shift-bar {
+        display: flex; justify-content: space-between; background: rgba(0, 0, 0, 0.35);
+        border: 1px solid var(--border-subtle); padding: 10px 16px; border-radius: 10px;
+        font-size: 13px; font-weight: 600; margin-bottom: 16px;
+      }
+      .slot-window {
+        border: 1px dashed var(--border-gold); border-radius: 14px;
+        padding: 26px 14px; margin-bottom: 18px; background: rgba(0, 0, 0, 0.4);
+      }
+      .slot-prod { font-size: 15px; font-weight: 600; color: #e2e8f0; margin-bottom: 6px; }
+      .slot-money { font-size: 26px; font-weight: 800; color: var(--emerald-green); }
+      .btn-order-action {
+        width: 100%; height: 48px; background: linear-gradient(145deg, #262c38 0%, #151820 100%);
+        border: 1px solid var(--border-gold); border-radius: 10px; color: var(--gold-light);
+        font-size: 14px; font-weight: 700; cursor: pointer;
+      }
+      .btn-order-action:disabled { opacity: 0.4; cursor: not-allowed; }
+
+      /* TAB NHẬT KÝ */
+      .logs-card {
+        background: var(--surface-card); border: 1px solid var(--border-subtle);
+        border-radius: 16px; padding: 18px;
+      }
+      .logs-header {
+        display: flex; justify-content: space-between; align-items: center;
+        border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; margin-bottom: 14px;
+      }
+      .logs-item {
+        background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-subtle);
+        border-radius: 10px; padding: 12px 14px; margin-bottom: 10px;
+      }
+
+      /* TAB TÀI KHOẢN */
+      .profile-header-card {
+        background: var(--surface-card); border: 1px solid var(--border-subtle);
+        border-radius: 16px; padding: 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+      }
+      .avatar-circle {
+        width: 54px; height: 54px; background: rgba(212, 175, 55, 0.1);
+        border: 1px solid var(--border-gold); color: var(--gold-main);
+        border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; font-weight: 800;
+      }
+      .menu-group {
+        background: var(--surface-card); border: 1px solid var(--border-subtle);
+        border-radius: 14px; margin-bottom: 14px; overflow: hidden;
+      }
+      .group-title { padding: 12px 18px 6px; font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; }
+      .menu-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 18px; border-bottom: 1px solid var(--border-subtle); cursor: pointer;
+      }
+      .menu-row:last-child { border-bottom: none; }
+      .btn-logout-full {
+        width: 100%; height: 46px; background: rgba(234, 88, 12, 0.08);
+        color: #ea580c; border: 1px solid rgba(234, 88, 12, 0.25);
+        border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 6px;
+      }
+
+      /* BOTTOM NAV */
+      .bottom-nav {
+        position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+        width: 100%; max-width: 450px; height: 64px;
+        background: rgba(11, 14, 20, 0.95); backdrop-filter: blur(15px);
+        border-top: 1px solid var(--border-gold);
+        display: flex; justify-content: space-around; align-items: center; z-index: 100;
+      }
+      .nav-btn {
+        display: flex; flex-direction: column; align-items: center; gap: 4px;
+        color: #64748b; font-size: 11px; font-weight: 600; cursor: pointer; background: none; border: none; width: 25%;
+      }
+      .nav-btn.active { color: var(--gold-main); font-weight: 700; }
+
+      /* POPUP MODAL CHUNG */
+      .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(8px);
+        display: flex; justify-content: center; align-items: flex-end;
+        z-index: 999; visibility: hidden; opacity: 0; transition: all 0.25s;
+      }
+      .modal-overlay.active { visibility: visible; opacity: 1; }
+      .modal-sheet {
+        background: #111419; border-top: 1px solid var(--border-gold);
+        width: 100%; max-width: 450px; border-top-left-radius: 20px; border-top-right-radius: 20px;
+        padding: 22px 18px; max-height: 85vh; overflow-y: auto;
+      }
+      .modal-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;
+      }
+      .form-control { margin-bottom: 14px; }
+      .form-control label { display: block; font-size: 11.5px; font-weight: 600; margin-bottom: 6px; color: var(--text-dim); text-transform: uppercase; }
+      .form-control input, .form-control select {
+        width: 100%; height: 42px; padding: 0 12px; background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border-subtle); border-radius: 8px; font-size: 14px; outline: none; color: white;
+      }
+      .btn-submit-sheet {
+        width: 100%; height: 46px; background: linear-gradient(145deg, #262c38 0%, #151820 100%);
+        border: 1px solid var(--border-gold); color: var(--gold-light);
+        border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px;
+      }
+
+      /* QR BOX */
+      .qr-wrapper {
+        background: #ffffff; padding: 10px; border-radius: 12px;
+        width: 170px; height: 170px; margin: 12px auto; display: flex; justify-content: center; align-items: center;
+      }
+      .qr-wrapper img { width: 100%; height: 100%; object-fit: contain; }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <div class="app-backdrop-dark"></div>
+
+      <header class="top-header">
+        <div class="brand-name">MAGIC TÀ XÙA</div>
+        <div class="user-tag" id="user-display-name">Thành viên</div>
+      </header>
+
+      <main class="content-scroll">
+        <!-- TAB 1: TRANG CHỦ -->
+        <section id="tab-home" class="tab-pane active">
+          <div class="balance-card">
+            <div class="balance-label">Số dư thanh khoản ví</div>
+            <div class="balance-val" id="card-balance">0 đ</div>
+            <div class="card-actions">
+              <button class="btn-card-action" onclick="openModal('withdraw-modal')">+ Rút Tiền</button>
+              <button class="btn-card-action" onclick="switchTab('task')">Nhận Đơn Hôm Nay</button>
+            </div>
+          </div>
+
+          <div class="quick-grid">
+            <div class="quick-item" onclick="switchTab('task')">
+              <div class="quick-icon">🎁</div>
+              <span class="quick-text">Nhiệm vụ</span>
+            </div>
+            <div class="quick-item" onclick="openModal('withdraw-modal')">
+              <div class="quick-icon">💳</div>
+              <span class="quick-text">Rút tiền</span>
+            </div>
+            <div class="quick-item" onclick="switchTab('orders')">
+              <div class="quick-icon">📑</div>
+              <span class="quick-text">Nhật ký</span>
+            </div>
+            <div class="quick-item" onclick="openModal('cskh-modal')">
+              <div class="quick-icon">🎧</div>
+              <span class="quick-text">CSKH 24/7</span>
+            </div>
+          </div>
+
+          <div class="homestay-sec-title">Hạng Phòng Homestay Tà Xùa</div>
+
+          <!-- DANH SÁCH 3 HẠNG PHÒNG ĐẶT TRỰC TUYẾN -->
+          <div class="room-item-card">
+            <img src="https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=700&q=80" alt="Lưng Núi Villa" />
+            <div class="room-item-body">
+              <div class="room-item-title">Lưng Núi Villa Panaroma</div>
+              <div class="room-item-price">1.250.000 đ / đêm</div>
+              <button class="btn-book-now" onclick="triggerBooking('Lưng Núi Villa Panaroma', 1250000)">ĐẶT PHÒNG & GIỮ CHỖ</button>
+            </div>
+          </div>
+
+          <div class="room-item-card">
+            <img src="https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=700&q=80" alt="Bungalow Gỗ" />
+            <div class="room-item-body">
+              <div class="room-item-title">Bungalow Gỗ Vòm Mây</div>
+              <div class="room-item-price">850.000 đ / đêm</div>
+              <button class="btn-book-now" onclick="triggerBooking('Bungalow Gỗ Vòm Mây', 850000)">ĐẶT PHÒNG & GIỮ CHỖ</button>
+            </div>
+          </div>
+
+          <div class="room-item-card">
+            <img src="https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=700&q=80" alt="Phòng Gia Đình" />
+            <div class="room-item-body">
+              <div class="room-item-title">Phòng Gia Đình Tụ Hội</div>
+              <div class="room-item-price">1.600.000 đ / đêm</div>
+              <button class="btn-book-now" onclick="triggerBooking('Phòng Gia Đình Tụ Hội', 1600000)">ĐẶT PHÒNG & GIỮ CHỖ</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 2: NHIỆM VỤ NHẬN ĐƠN QUẢNG BÁ -->
+        <section id="tab-task" class="tab-pane">
+          <div class="slot-box">
+            <h3 style="font-size: 16px; margin-bottom: 4px; color: #f1f5f9">Phân Phối Đơn Homestay & Tour</h3>
+            <p style="font-size: 12px; color: var(--text-dim); margin-bottom: 16px">Bấm liên tục để nhận hoa hồng đại lý</p>
+
+            <div class="shift-bar">
+              <span>Lượt: <strong id="shift-label" style="color: var(--gold-light)">Lần 1</strong></span>
+              <span>Tiến độ ca: <strong id="count-label" style="color: var(--emerald-green)">0/50</strong></span>
+            </div>
+
+            <div class="slot-window">
+              <div class="slot-prod" id="order-name">Combo Săn Mây 2N1Đ Magic Tà Xùa</div>
+              <div class="slot-money" id="order-comm">+95.000 đ</div>
+              <small id="order-sub" style="color: var(--emerald-green); display: block; margin-top: 5px; font-weight: 600">Sẵn sàng đẩy tiếp thị</small>
+            </div>
+
+            <button id="btn-submit-task" class="btn-order-action">BẤM ĐỂ QUẢNG BÁ ĐƠN HÀNG</button>
+          </div>
+        </section>
+
+        <!-- TAB 3: NHẬT KÝ ĐƠN HÀNG -->
+        <section id="tab-orders" class="tab-pane">
+          <div class="logs-card">
+            <div class="logs-header">
+              <h3 style="font-size: 15px; color: #fff;">Nhật Ký Tiếp Thị</h3>
+              <span id="logs-total-count" style="font-size: 12px; color: var(--gold-light); font-weight: bold">0 đơn</span>
+            </div>
+            <div id="orders-log-list">
+              <p style="text-align: center; color: var(--text-dim); font-size: 12.5px; padding: 25px 0">Chưa có dữ liệu gửi đơn.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 4: MỤC TÀI KHOẢN -->
+        <section id="tab-profile" class="tab-pane">
+          <div class="profile-header-card">
+            <div class="avatar-circle" id="user-avatar-initial">M</div>
+            <div>
+              <h3 id="profile-fullname" style="font-size: 16px; color: #fff;">Thành viên Magic</h3>
+              <p id="profile-sub-info" style="font-size: 12px; color: var(--text-dim);">Đại lý lưu trú</p>
+            </div>
+          </div>
+
+          <div class="menu-group">
+            <div class="group-title">Tài chính & Giao dịch</div>
+            <div class="menu-row" onclick="openModal('bank-modal')">
+              <span>🏦 Tài khoản ngân hàng</span>
+              <span id="linked-bank-status" style="font-size: 12px; color: var(--text-dim)">Chưa liên kết</span>
+            </div>
+            <div class="menu-row" onclick="openModal('withdraw-modal')">
+              <span>💳 Yêu cầu rút tiền</span>
+              <span style="color: #64748b">›</span>
+            </div>
+            <div class="menu-row" onclick="openModal('history-modal')">
+              <span>📋 Lịch sử rút tiền</span>
+              <span style="color: #64748b">›</span>
+            </div>
+          </div>
+
+          <div class="menu-group">
+            <div class="group-title">Bảo mật & Thiết bị</div>
+            <div class="menu-row" onclick="openModal('password-modal')">
+              <span>🔒 Đổi mật khẩu</span>
+              <span style="color: #64748b">›</span>
+            </div>
+            <div class="menu-row" onclick="alert('Bảo mật 2 lớp Smart OTP đang kích hoạt an toàn.')">
+              <span>🛡️ Smart OTP</span>
+              <span style="color: var(--emerald-green); font-size: 12px; font-weight: bold">Đang bật</span>
+            </div>
+          </div>
+
+          <div class="menu-group">
+            <div class="group-title">Hỗ trợ</div>
+            <div class="menu-row" onclick="openModal('cskh-modal')">
+              <span>🎧 Hỗ trợ CSKH 24/7</span>
+              <span style="color: #64748b">›</span>
+            </div>
+          </div>
+
+          <button class="btn-logout-full" id="btn-logout-full">Đăng Xuất Khỏi Tài Khoản</button>
+        </section>
+      </main>
+
+      <!-- THANH ĐIỀU HƯỚNG ĐÁY CHUẨN 4 NÚT -->
+      <nav class="bottom-nav">
+        <button class="nav-btn active" onclick="switchTab('home')">
+          <span style="font-size: 18px;">🏠</span>
+          <span>Trang chủ</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('task')">
+          <span style="font-size: 18px;">🎁</span>
+          <span>Nhiệm vụ</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('orders')">
+          <span style="font-size: 18px;">📑</span>
+          <span>Nhật ký</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('profile')">
+          <span style="font-size: 18px;">👤</span>
+          <span>Tài khoản</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- POPUP ĐẶT PHÒNG + THANH TOÁN QR (STK 123123123) -->
+    <div id="booking-sheet" class="modal-overlay">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h3 id="bk-modal-title" style="color: var(--gold-light); font-size: 15px;">Đặt Phòng Homestay</h3>
+          <span style="font-size: 24px; cursor: pointer; color: var(--text-dim);" onclick="closeModal('booking-sheet')">&times;</span>
+        </div>
+
+        <div id="bk-step-1">
+          <div class="form-control">
+            <label>Hạng Phòng:</label>
+            <input type="text" id="bk-room-name" readonly style="color: var(--gold-light); font-weight: bold;" />
+          </div>
+          <div class="form-control">
+            <label>Số ĐT Người Đặt (Zalo):</label>
+            <input type="tel" id="bk-phone" required placeholder="09xxxxxxxx" />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-control">
+              <label>Ngày Nhận:</label>
+              <input type="date" id="bk-in" required onchange="recalcBookingPrice()" />
+            </div>
+            <div class="form-control">
+              <label>Ngày Trả:</label>
+              <input type="date" id="bk-out" required onchange="recalcBookingPrice()" />
+            </div>
+          </div>
+          <div style="background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; margin-bottom: 12px; display:flex; justify-content:space-between;">
+            <span style="color: var(--text-dim); font-size: 13px;">Tổng tiền dự kiến:</span>
+            <span id="bk-total-price" style="color: var(--emerald-green); font-weight: bold; font-size: 16px;">0 đ</span>
+          </div>
+          <button type="button" class="btn-submit-sheet" onclick="goToPaymentStep()">TIẾP TỤC ĐẾN QUÉT MÃ QR THANH TOÁN →</button>
+        </div>
+
+        <div id="bk-step-2" style="display: none; text-align: center;">
+          <p style="font-size: 12.5px; color: var(--text-dim);">Vui lòng quét mã QR hoặc chuyển khoản giữ phòng:</p>
+          <div class="qr-wrapper">
+            <img id="bk-qr-image" src="" alt="QR Chuyển Khoản" />
+          </div>
+          <div style="font-size: 12.5px; line-height: 1.8; text-align: left; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+            <p><strong>Ngân hàng:</strong> MB Bank (Quân Đội)</p>
+            <p><strong>Số tài khoản:</strong> <span style="color: var(--gold-light); font-size: 14px; font-weight: bold;">123123123</span></p>
+            <p><strong>Chủ tài khoản:</strong> MAGIC TA XUA</p>
+            <p><strong>Số tiền:</strong> <span id="pay-amount-display" style="color: var(--emerald-green); font-weight: bold;">0 đ</span></p>
+            <p><strong>Nội dung:</strong> <span id="pay-code-display" style="font-family: monospace; color: var(--gold-light);">BOOKING</span></p>
+          </div>
+          <button type="button" class="btn-submit-sheet" id="btn-finish-booking" onclick="finishBookingToFirebase()">TÔI ĐÃ CHUYỂN KHOẢN XONG</button>
+          <div style="margin-top: 10px; font-size: 12px; color: var(--text-dim); cursor: pointer; text-decoration: underline;" onclick="backToStep1Booking()">
+            ← Chỉnh sửa lại thông tin
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POPUP LIÊN KẾT NGÂN HÀNG -->
+    <div id="bank-modal" class="modal-overlay">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h3 style="color: #fff; font-size: 15px;">Liên Kết Tài Khoản Ngân Hàng</h3>
+          <span style="font-size: 24px; cursor: pointer; color: var(--text-dim);" onclick="closeModal('bank-modal')">&times;</span>
+        </div>
+        <form id="link-bank-form">
+          <div class="form-control">
+            <label>Ngân hàng:</label>
+            <select id="link-bank-select" required>
+              <option value="MB Bank">MB Bank</option>
+              <option value="Vietcombank">Vietcombank</option>
+              <option value="Techcombank">Techcombank</option>
+              <option value="ACB">ACB</option>
+            </select>
+          </div>
+          <div class="form-control">
+            <label>Số tài khoản:</label>
+            <input type="text" id="link-bank-acc" required placeholder="Nhập STK..." />
+          </div>
+          <div class="form-control">
+            <label>Chủ tài khoản:</label>
+            <input type="text" id="link-bank-holder" required placeholder="NGUYEN VAN A" />
+          </div>
+          <button type="submit" class="btn-submit-sheet">LƯU TÀI KHOẢN NGÂN HÀNG</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- POPUP RÚT TIỀN -->
+    <div id="withdraw-modal" class="modal-overlay">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h3 style="color: #fff; font-size: 15px;">Rút Tiền Về Ví</h3>
+          <span style="font-size: 24px; cursor: pointer; color: var(--text-dim);" onclick="closeModal('withdraw-modal')">&times;</span>
+        </div>
+        <form id="withdraw-sheet-form">
+          <div class="form-control">
+            <label>Số dư khả dụng:</label>
+            <input type="text" id="withdraw-sheet-bal" readonly style="color: var(--emerald-green); font-weight: bold" />
+          </div>
+          <div class="form-control">
+            <label>Số tiền muốn rút (VNĐ):</label>
+            <input type="number" id="withdraw-sheet-money" required placeholder="Tối thiểu 50.000 đ" />
+          </div>
+          <button type="submit" class="btn-submit-sheet">XÁC NHẬN RÚT TIỀN</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- POPUP ĐỔI MẬT KHẨU -->
+    <div id="password-modal" class="modal-overlay">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h3 style="color: #fff; font-size: 15px;">Đổi Mật Khẩu</h3>
+          <span style="font-size: 24px; cursor: pointer; color: var(--text-dim);" onclick="closeModal('password-modal')">&times;</span>
+        </div>
+        <form id="change-pass-form">
+          <div class="form-control">
+            <label>Mật khẩu cũ:</label>
+            <input type="password" id="old-pass" required placeholder="••••••" />
+          </div>
+          <div class="form-control">
+            <label>Mật khẩu mới:</label>
+            <input type="password" id="new-pass" required placeholder="Tối thiểu 6 ký tự" />
+          </div>
+          <button type="submit" class="btn-submit-sheet">CẬP NHẬT MẬT KHẨU</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- POPUP CSKH -->
+    <div id="cskh-modal" class="modal-overlay">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h3 style="color: #fff; font-size: 15px;">Hỗ Trợ Khách Hàng 24/7</h3>
+          <span style="font-size: 24px; cursor: pointer; color: var(--text-dim);" onclick="closeModal('cskh-modal')">&times;</span>
+        </div>
+        <div style="text-align: center; padding: 10px 0">
+          <button id="btn-open-telegram" class="btn-submit-sheet" style="border-color: #0088cc; color: #38bdf8; margin-bottom: 10px">Kênh Telegram CSKH</button>
+          <button id="btn-call-hotline" class="btn-submit-sheet" style="border-color: var(--emerald-green); color: var(--emerald-green)">Hotline / Zalo Trực Tuyến</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POPUP LỊCH SỬ RÚT -->
+    <div id="history-modal" class="modal-overlay">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h3 style="color: #fff; font-size: 15px;">Lịch Sử Rút Tiền</h3>
+          <span style="font-size: 24px; cursor: pointer; color: var(--text-dim);" onclick="closeModal('history-modal')">&times;</span>
+        </div>
+        <div id="history-list-content" style="font-size: 13px">
+          <p style="text-align: center; color: var(--text-dim); padding: 20px">Chưa có giao dịch rút tiền nào.</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyBWlIuTCVi-i6BXl_UNRRRHgJ3yMEU0Djo",
+        authDomain: "xmagic-2b4ff.firebaseapp.com",
+        databaseURL: "https://xmagic-2b4ff-default-rtdb.firebaseio.com",
+        projectId: "xmagic-2b4ff",
+        storageBucket: "xmagic-2b4ff.firebasestorage.app",
+        messagingSenderId: "147650737985",
+        appId: "1:147650737985:web:25b75e2cb9e02eb16053c0"
+      };
+
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      const db = firebase.database();
+
+      const demoOrders = [
+        { name: 'Combo Nghỉ Dưỡng 2N1Đ Villa Panaroma', comm: 95000 },
+        { name: 'Tour Trekking Rừng Rêu Tà Xùa', comm: 150000 },
+        { name: 'Bungalow Gỗ View Săn Mây Đỉnh Gió', comm: 80000 },
+        { name: 'Gói Tiệc Nướng BBQ Hoàng Hôn Tà Xùa', comm: 120000 },
+        { name: 'Trải Nghiệm Bồn Tắm Thảo Dược Người Dao', comm: 60000 },
+      ];
+
+      let currentUser = null;
+      let userRef = null;
+      let selectedRoomPrice = 1250000;
+      let pendingBooking = null;
+
+      document.addEventListener('DOMContentLoaded', () => {
+        currentUser = JSON.parse(localStorage.getItem('xmagic_user'));
+        if (!currentUser) {
+          window.location.replace('./auth.html');
+          return;
+        }
+
+        const safeKey = currentUser.safeKey || currentUser.username.replace(/\./g, '_');
+        userRef = db.ref('users/' + safeKey);
+
+        // LẮNG NGHE DỮ LIỆU USER THỜI GIAN THỰC TỪ FIREBASE
+        userRef.on('value', (snapshot) => {
+          const remoteData = snapshot.val();
+          if (!remoteData) return;
+
+          if (remoteData.status === 'blocked') {
+            alert('Tài khoản của bạn đã bị khóa bởi Quản trị viên!');
+            localStorage.removeItem('xmagic_user');
+            window.location.replace('./auth.html');
+            return;
+          }
+
+          currentUser = remoteData;
+          localStorage.setItem('xmagic_user', JSON.stringify(currentUser));
+          updateBalanceUI();
+          renderUserInfo();
+          checkLinkedBankUI();
+          renderTaskUI();
+        });
+
+        // LẮNG NGHE CẤU HÌNH CSKH
+        db.ref('config').on('value', (snap) => {
+          const cfg = snap.val() || { telegram: 'https://telegram.org', hotline: '0988.xxx.xxx' };
+          document.getElementById('btn-open-telegram').onclick = () => window.open(cfg.telegram, '_blank');
+          document.getElementById('btn-call-hotline').onclick = () => alert('Hotline / Zalo: ' + cfg.hotline);
+        });
+
+        // LẮNG NGHE NHẬT KÝ ĐƠN TIẾP THỊ
+        db.ref('orders/' + safeKey).on('value', (snap) => {
+          const ordersObj = snap.val() || {};
+          const myOrders = Object.values(ordersObj).reverse();
+          renderOrdersLogUI(myOrders);
+        });
+
+        // BẤM TIẾP THỊ ĐƠN HÀNG
+        const btnTask = document.getElementById('btn-submit-task');
+        const orderName = document.getElementById('order-name');
+        const orderComm = document.getElementById('order-comm');
+        const orderSub = document.getElementById('order-sub');
+
+        btnTask.addEventListener('click', () => {
+          if (currentUser.shift > 2) return;
+
+          btnTask.disabled = true;
+          orderSub.textContent = 'Đang ghép nối dữ liệu dịch vụ...';
+
+          let rolls = 0;
+          const timer = setInterval(() => {
+            const temp = demoOrders[Math.floor(Math.random() * demoOrders.length)];
+            orderName.textContent = temp.name;
+            orderComm.textContent = '+' + Number(temp.comm).toLocaleString('vi-VN') + ' đ';
+            rolls++;
+
+            if (rolls > 6) {
+              clearInterval(timer);
+              const lucky = demoOrders[Math.floor(Math.random() * demoOrders.length)];
+              orderName.textContent = lucky.name;
+              orderComm.textContent = '+' + Number(lucky.comm).toLocaleString('vi-VN') + ' đ';
+              orderSub.textContent = 'Ghép đơn tiếp thị thành công!';
+
+              const newBalance = (currentUser.balance || 0) + lucky.comm;
+              const newCount = (currentUser.count || 0) + 1;
+              let newShift = currentUser.shift || 1;
+
+              if (newCount >= 50) {
+                if (newShift === 1) {
+                  newShift = 2;
+                  alert('Chúc mừng bạn hoàn thành ca 1 (50/50 đơn)! Bắt đầu ca 2.');
+                } else {
+                  newShift = 3;
+                  alert('Bạn đã hoàn tất toàn bộ nhiệm vụ hôm nay!');
+                }
+              }
+
+              userRef.update({
+                balance: newBalance,
+                count: newCount >= 50 && newShift === 2 ? 0 : newCount,
+                shift: newShift
+              });
+
+              db.ref('orders/' + safeKey).push({
+                name: lucky.name,
+                comm: lucky.comm,
+                shift: currentUser.shift || 1,
+                orderIndex: newCount,
+                time: new Date().toLocaleTimeString('vi-VN') + ' - ' + new Date().toLocaleDateString('vi-VN')
+              });
+
+              btnTask.disabled = false;
+            }
+          }, 80);
+        });
+
+        // LIÊN KẾT NGÂN HÀNG
+        document.getElementById('link-bank-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          userRef.update({
+            bank: document.getElementById('link-bank-select').value,
+            bankAcc: document.getElementById('link-bank-acc').value,
+            bankHolder: document.getElementById('link-bank-holder').value.toUpperCase()
+          }).then(() => {
+            closeModal('bank-modal');
+            alert('Liên kết tài khoản thành công!');
+          });
+        });
+
+        // RÚT TIỀN TẠO LỆNH LÊN FIREBASE ĐỂ ADMIN DUYỆT
+        document.getElementById('withdraw-sheet-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const money = parseInt(document.getElementById('withdraw-sheet-money').value);
+
+          if (!currentUser.bankAcc) {
+            alert('Vui lòng liên kết tài khoản ngân hàng trước!');
+            closeModal('withdraw-modal');
+            openModal('bank-modal');
+            return;
+          }
+          if (money > (currentUser.balance || 0)) {
+            alert('Số dư ví không đủ!');
+            return;
+          }
+          if (money < 50000) {
+            alert('Tối thiểu rút 50.000 VNĐ!');
+            return;
+          }
+
+          const newBal = (currentUser.balance || 0) - money;
+          userRef.update({ balance: newBal });
+
+          db.ref('withdraws').push({
+            time: new Date().toLocaleTimeString('vi-VN') + ' - ' + new Date().toLocaleDateString('vi-VN'),
+            username: currentUser.username,
+            safeKey: safeKey,
+            bank: currentUser.bank,
+            account: currentUser.bankAcc + ' (' + currentUser.bankHolder + ')',
+            amount: money,
+            status: 'Chờ duyệt'
+          }).then(() => {
+            closeModal('withdraw-modal');
+            alert('Lệnh rút tiền đã gửi! Đang chờ Admin duyệt.');
+            document.getElementById('withdraw-sheet-form').reset();
+          });
+        });
+
+        // ĐỔI MẬT KHẨU
+        document.getElementById('change-pass-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const oldP = document.getElementById('old-pass').value;
+          const newP = document.getElementById('new-pass').value;
+          if (oldP !== currentUser.password) {
+            alert('Mật khẩu cũ không chính xác!');
+            return;
+          }
+          userRef.update({ password: newP }).then(() => {
+            closeModal('password-modal');
+            alert('Đổi mật khẩu thành công!');
+            document.getElementById('change-pass-form').reset();
+          });
+        });
+
+        // ĐĂNG XUẤT
+        document.getElementById('btn-logout-full').addEventListener('click', () => {
+          if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+            localStorage.removeItem('xmagic_user');
+            window.location.replace('./auth.html');
+          }
+        });
+      });
+
+      // XỬ LÝ ĐẶT PHÒNG & TỰ ĐỘNG SINH QR
+      function triggerBooking(roomName, price) {
+        selectedRoomPrice = price;
+        document.getElementById('bk-room-name').value = roomName;
+        const today = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+        document.getElementById('bk-in').value = today;
+        document.getElementById('bk-out').value = tomorrow;
+        document.getElementById('bk-phone').value = currentUser.username || '';
+
+        recalcBookingPrice();
+        backToStep1Booking();
+        openModal('booking-sheet');
+      }
+
+      function recalcBookingPrice() {
+        const inD = new Date(document.getElementById('bk-in').value);
+        const outD = new Date(document.getElementById('bk-out').value);
+        let nights = Math.ceil((outD - inD) / (1000 * 60 * 60 * 24));
+        if (isNaN(nights) || nights < 1) nights = 1;
+        const total = nights * selectedRoomPrice;
+        document.getElementById('bk-total-price').textContent = total.toLocaleString('vi-VN') + ' đ';
+        return total;
+      }
+
+      function goToPaymentStep() {
+        const total = recalcBookingPrice();
+        const phone = document.getElementById('bk-phone').value.trim();
+        if (!phone) {
+          alert('Vui lòng nhập số điện thoại liên hệ!');
+          return;
+        }
+
+        const transferCode = 'MG' + phone.slice(-4) + Math.floor(Math.random() * 89 + 10);
+        pendingBooking = {
+          room: document.getElementById('bk-room-name').value,
+          phone: phone,
+          username: currentUser.username,
+          checkin: document.getElementById('bk-in').value,
+          checkout: document.getElementById('bk-out').value,
+          totalPrice: total,
+          transferCode: transferCode,
+          status: 'Đã chuyển khoản (Chờ duyệt)',
+          time: new Date().toLocaleTimeString('vi-VN') + ' - ' + new Date().toLocaleDateString('vi-VN'),
+          timestamp: Date.now()
+        };
+
+        document.getElementById('pay-amount-display').textContent = total.toLocaleString('vi-VN') + ' đ';
+        document.getElementById('pay-code-display').textContent = transferCode;
+
+        // Sinh mã QR chuyển khoản VietQR chuẩn với STK 123123123
+        const qrUrl = `https://api.vietqr.io/image/970422-123123123-compact2.png?amount=${total}&addInfo=${encodeURIComponent(transferCode)}&accountName=MAGIC%20HOMESTAY`;
+        document.getElementById('bk-qr-image').src = qrUrl;
+
+        document.getElementById('bk-step-1').style.display = 'none';
+        document.getElementById('bk-step-2').style.display = 'block';
+        document.getElementById('bk-modal-title').textContent = 'Thanh Toán Giữ Chỗ';
+      }
+
+      function backToStep1Booking() {
+        document.getElementById('bk-step-1').style.display = 'block';
+        document.getElementById('bk-step-2').style.display = 'none';
+        document.getElementById('bk-modal-title').textContent = 'Đặt Phòng Homestay';
+      }
+
+      function finishBookingToFirebase() {
+        if (!pendingBooking) return;
+        const btn = document.getElementById('btn-finish-booking');
+        btn.disabled = true;
+        btn.textContent = 'ĐANG LƯU VÀO HỆ THỐNG...';
+
+        db.ref('bookings').push(pendingBooking).then(() => {
+          alert('Tuyệt vời! Yêu cầu đặt phòng & chuyển khoản đã gửi lên quản trị viên. Chúng mình sẽ liên hệ duyệt phòng ngay.');
+          btn.disabled = false;
+          btn.textContent = 'TÔI ĐÃ CHUYỂN KHOẢN XONG';
+          closeModal('booking-sheet');
+        });
+      }
+
+      function renderOrdersLogUI(orders) {
+        const container = document.getElementById('orders-log-list');
+        const counter = document.getElementById('logs-total-count');
+        counter.textContent = `${orders.length} đơn đã gửi`;
+
+        if (orders.length === 0) {
+          container.innerHTML = `<p style="text-align:center; color:var(--text-dim); font-size:12.5px; padding:25px 0">Chưa có dữ liệu gửi đơn.</p>`;
+          return;
+        }
+
+        container.innerHTML = orders.map(item => `
+          <div class="logs-item">
+            <div style="display:flex; justify-content:space-between; font-weight:600; font-size:13px;">
+              <span style="color:#e2e8f0;">${item.name}</span>
+              <span style="color:var(--emerald-green);">+${Number(item.comm).toLocaleString('vi-VN')} đ</span>
+            </div>
+            <div style="font-size:11px; color:var(--text-dim); margin-top:4px; display:flex; justify-content:space-between;">
+              <span>${item.time}</span>
+              <span style="color:var(--gold-light);">Ca ${item.shift} (Đơn #${item.orderIndex})</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function renderUserInfo() {
+        if (!currentUser) return;
+        const name = currentUser.fullname || currentUser.username;
+        document.getElementById('user-display-name').textContent = name;
+        document.getElementById('profile-fullname').textContent = name;
+        document.getElementById('profile-sub-info').textContent = 'Mã đại lý: ' + currentUser.username;
+        document.getElementById('user-avatar-initial').textContent = name.charAt(0).toUpperCase();
+      }
+
+      function updateBalanceUI() {
+        if (!currentUser) return;
+        const balStr = Number(currentUser.balance || 0).toLocaleString('vi-VN') + ' đ';
+        document.getElementById('card-balance').textContent = balStr;
+        const sheetBal = document.getElementById('withdraw-sheet-bal');
+        if (sheetBal) sheetBal.value = balStr;
+      }
+
+      function checkLinkedBankUI() {
+        if (!currentUser) return;
+        const el = document.getElementById('linked-bank-status');
+        if (currentUser.bankAcc) {
+          el.textContent = currentUser.bank + ' (...' + currentUser.bankAcc.slice(-4) + ')';
+          el.style.color = 'var(--emerald-green)';
+        } else {
+          el.textContent = 'Chưa liên kết';
+          el.style.color = 'var(--text-dim)';
+        }
+      }
+
+      function renderTaskUI() {
+        if (!currentUser) return;
+        const btnTask = document.getElementById('btn-submit-task');
+        document.getElementById('shift-label').textContent = `Lần ${currentUser.shift || 1}`;
+        document.getElementById('count-label').textContent = `${currentUser.count || 0}/50`;
+        if (currentUser.shift > 2) {
+          btnTask.disabled = true;
+          btnTask.textContent = 'HÔM NAY ĐÃ HOÀN THÀNH 2 LẦN (100 ĐƠN)';
+        } else {
+          btnTask.disabled = false;
+          btnTask.textContent = currentUser.count === 0 && currentUser.shift === 1 ? 'BẤM ĐỂ QUẢNG BÁ ĐƠN HÀNG' : 'TIẾP TỤC GỬI';
+        }
+      }
+
+      function switchTab(tabId) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        const target = document.getElementById('tab-' + tabId);
+        if (target) target.classList.add('active');
+
+        const indexMap = { home: 0, task: 1, orders: 2, profile: 3 };
+        const btns = document.querySelectorAll('.nav-btn');
+        if (btns[indexMap[tabId]]) btns[indexMap[tabId]].classList.add('active');
+      }
+
+      function openModal(modalId) {
+        if (modalId === 'history-modal') {
+          db.ref('withdraws').once('value').then(snap => {
+            const allW = snap.val() || {};
+            const myW = Object.values(allW).filter(w => w.username === currentUser.username).reverse();
+            const container = document.getElementById('history-list-content');
+            if (myW.length === 0) {
+              container.innerHTML = '<p style="text-align:center; color:var(--text-dim); padding:20px">Chưa có giao dịch rút tiền.</p>';
+            } else {
+              container.innerHTML = myW.map(item => `
+                <div style="background: rgba(0,0,0,0.35); border-bottom: 1px solid var(--border-subtle); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                  <div style="display:flex; justify-content:space-between; font-weight:bold;">
+                    <span style="color:#ffffff;">-${Number(item.amount).toLocaleString('vi-VN')} đ</span>
+                    <span style="color:var(--gold-light); font-size:12px;">${item.status}</span>
+                  </div>
+                  <div style="font-size:11.5px; color:var(--text-dim); margin-top:4px;">
+                    ${item.bank} - ${item.account}<br>${item.time}
+                  </div>
+                </div>
+              `).join('');
+            }
+          });
+        }
+        document.getElementById(modalId).classList.add('active');
+      }
+
+      function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('active');
+      }
+    </script>
+    <!-- Banner thông báo chấp nhận điều khoản chung -->
+<div id="termsBanner" class="terms-banner">
+  <p>Bằng việc tiếp tục sử dụng trang web, quý khách đồng ý với <a href="#" style="color: #d4af37;">Điều khoản Dịch vụ</a> của Homestay Tà Xùa.</p>
+  <button onclick="acceptTerms()">Đồng ý</button>
+</div>
+
+<!-- Popup Yêu cầu Đăng nhập (Hiển thị lặp lại) -->
+<div id="loginModal" class="modal-overlay">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeLoginModal()">&times;</span>
+    <h2 style="font-family: 'Cinzel', serif; color: #d4af37; text-align: center;">Đăng Nhập Thành Viên</h2>
+    <p style="text-align: center; font-size: 14px; margin-bottom: 20px;">Quý khách vui lòng đăng nhập để tiến hành đặt phòng và nhận ưu đãi.</p>
+    
+    <input type="text" placeholder="Tên đăng nhập / Số điện thoại" id="username">
+    <input type="password" placeholder="Mật khẩu" id="password">
+    
+    <!-- Chỗ check điều khoản ngay trong form đăng nhập giống các trang dịch vụ -->
+    <label class="terms-checkbox">
+      <input type="checkbox" id="agreeTerms"> Tôi đã đọc và chấp nhận các điều khoản dịch vụ & chính sách bảo mật.
+    </label>
+    
+    <button class="login-btn" onclick="processLogin()">Đăng nhập ngay</button>
+  </div>
+</div>
+<script>
+  let isLoggedIn = false;
+  let loginTimeout;
+
+  // 1. Hàm hiển thị popup đăng nhập
+  function showLoginModal() {
+    if (!isLoggedIn) {
+      document.getElementById('loginModal').style.display = 'block';
+    }
+  }
+
+  // 2. Chờ 3 giây sau khi vào web thì hiện popup lần đầu tiên
+  setTimeout(showLoginModal, 3000); 
+
+  // 3. Hàm xử lý khi khách cố tình tắt popup
+  function closeLoginModal() {
+    document.getElementById('loginModal').style.display = 'none';
+    
+    // Nếu chưa đăng nhập, tiếp tục ám ảnh khách bằng cách hiện lại sau 5 giây
+    if (!isLoggedIn) {
+      clearTimeout(loginTimeout); // Xóa hẹn giờ cũ (nếu có) để tránh loạn
+      loginTimeout = setTimeout(showLoginModal, 5000); 
+    }
+  }
+
+  // 4. Hàm xử lý khi bấm nút đăng nhập
+  function processLogin() {
+    const isTermsAccepted = document.getElementById('agreeTerms').checked;
+    
+    // Bắt buộc phải tích chọn điều khoản
+    if (!isTermsAccepted) {
+      alert("Quý khách vui lòng đồng ý với các điều khoản dịch vụ để tiếp tục!");
+      return;
+    }
+    
+    // Giả lập đăng nhập thành công
+    isLoggedIn = true;
+    document.getElementById('loginModal').style.display = 'none';
+    alert("Đăng nhập thành công! Quý khách có thể bắt đầu sử dụng dịch vụ.");
+  }
+
+  // 5. Hàm ẩn banner thông báo điều khoản dưới góc màn hình
+  function acceptTerms() {
+    document.getElementById('termsBanner').style.display = 'none';
+  }
+</script>
+  </body>
+</html>
